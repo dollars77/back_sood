@@ -27,7 +27,8 @@ const fileFilter = (req, file, cb) => {
     if (
         file.mimetype === "image/png" ||
         file.mimetype === "image/jpg" ||
-        file.mimetype === "image/jpeg"
+        file.mimetype === "image/jpeg" ||
+        file.mimetype === "image/webp"
     ) {
         // check file type to be pdf, doc, or docx
         cb(null, true);
@@ -57,26 +58,41 @@ exports.createBannerheader = async (req, res) => {
     // const countBanner = await banner.count({ where: { type: 1,language: req.body.language} });
     const countBanner = await banner.count();
     try {
-        await sharp(req.files.imagebanner[0].path)
-            // .resize(400, 400)
-            .png({ quality: 100 })
-            .toFile(
+        let sharpInstance = sharp(req.files.imagebanner[0].path);
+
+        if (path.extname(req.files.imagebanner[0].originalname).toLowerCase() === '.webp') {
+            sharpInstance = sharpInstance.webp();
+
+        } else {
+            sharpInstance = sharpInstance.png({ quality: 50 });
+            await sharpInstance.toFile(
                 path.resolve(
                     req.files.imagebanner[0].destination,
                     "resized",
                     req.files.imagebanner[0].filename
                 )
             );
-        fs.unlinkSync(req.files.imagebanner[0].path);
+            fs.unlinkSync(req.files.imagebanner[0].path);
+        }
+
+
+
     } catch (err) { }
     //************************************************************ */
 
     var imagebannertxt = null;
 
     try {
-        imagebannertxt =
-            "app\\images\\banner\\resized\\" +
+        if (path.extname(req.files.imagebanner[0].originalname).toLowerCase() === '.webp') {
+            imagebannertxt =
+            "app\\images\\banner\\" +
             req.files.imagebanner[0].filename;
+        } else {
+            imagebannertxt =
+                "app\\images\\banner\\resized\\" +
+                req.files.imagebanner[0].filename;
+        }
+
     } catch (err) {
         imagebannertxt = null;
     }
@@ -85,7 +101,7 @@ exports.createBannerheader = async (req, res) => {
         data_banner = {
             imagebanner: imagebannertxt,
             type: req.body.type,
-            language:req.body.language,
+            language: req.body.language,
             order: countBanner + 1,
 
 
@@ -123,7 +139,7 @@ exports.getAllBannerByType = async (req, res) => {
 };
 exports.getAllBanner = async (req, res) => {
     banner
-        .findAll({  order: [["type", "ASC"],["order", "ASC"]], },
+        .findAll({ order: [["type", "ASC"], ["order", "ASC"]], },
         )
         .then((data) => {
             res.send(data);
@@ -174,46 +190,46 @@ exports.deleteImgBanner = async (req, res) => {
 
 exports.deleteBanner = (req, res) => {
     const id = req.params.id;
-  
+
     banner
-      .destroy({
-        where: { id: id },
-      })
-      .then(() => {
-        res.status(200).send({
-          message: "banner was deleted successfully!",
+        .destroy({
+            where: { id: id },
+        })
+        .then(() => {
+            res.status(200).send({
+                message: "banner was deleted successfully!",
+            });
+        })
+        .catch((err) => {
+            res.status(500).send({
+                message: "Could not delete banner",
+            });
         });
-      })
-      .catch((err) => {
-        res.status(500).send({
-          message: "Could not delete banner",
-        });
-      });
-  };
-  exports.updateOrderBanner = async (req, res) => {
+};
+exports.updateOrderBanner = async (req, res) => {
     const banner_data = req.body;
     try {
-      await banner_data.map(async (data) =>
-        await banner.update(
-          { order: data.order },
-          {
-            where: { id: data.id },
-  
-          }
-        )
-      );
-      res.status(200).send({ status: true });
-    } catch (error) {
-      res.status(500).send({
-        message: error.message || "Some error occurred while retrieving banner_data.",
-      });
-    }
-  
-  };
+        await banner_data.map(async (data) =>
+            await banner.update(
+                { order: data.order },
+                {
+                    where: { id: data.id },
 
-  exports.getAllBannerByTypeAndLanguage = async (req, res) => {
+                }
+            )
+        );
+        res.status(200).send({ status: true });
+    } catch (error) {
+        res.status(500).send({
+            message: error.message || "Some error occurred while retrieving banner_data.",
+        });
+    }
+
+};
+
+exports.getAllBannerByTypeAndLanguage = async (req, res) => {
     banner
-        .findAll({ where: { type: req.params.type,language:req.params.language }, order: [["order", "ASC"]], },
+        .findAll({ where: { type: req.params.type, language: req.params.language }, order: [["order", "ASC"]], },
         )
         .then((data) => {
             res.send(data);
@@ -225,4 +241,3 @@ exports.deleteBanner = (req, res) => {
         });
 };
 
-  

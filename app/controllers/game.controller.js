@@ -27,7 +27,8 @@ const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === "image/png" ||
     file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"
+    file.mimetype === "image/jpeg"||
+    file.mimetype === "image/webp"
   ) {
     // check file type to be pdf, doc, or docx
     cb(null, true);
@@ -74,26 +75,37 @@ exports.createGame = async (req, res) => {
       var data_camp = {};
       const countgame = await game.count({ where: { campId: req.body.campId } });
       try {
-        await sharp(req.files.imagegame[0].path)
-          // .resize(400, 400)
-          .webp({ quality: 100 })
-          .toFile(
+        let sharpInstance = sharp(req.files.imagegame[0].path);
+
+        if (path.extname(req.files.imagegame[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 80 });
+          await sharpInstance.toFile(
             path.resolve(
               req.files.imagegame[0].destination,
               "resized",
               req.files.imagegame[0].filename
             )
           );
-        fs.unlinkSync(req.files.imagegame[0].path);
+          fs.unlinkSync(req.files.imagegame[0].path);
+        }
       } catch (err) { }
       //************************************************************ */
 
       var imagegametxt = null;
 
       try {
-        imagegametxt =
-          "app\\images\\game\\resized\\" +
-          req.files.imagegame[0].filename;
+        if (path.extname(req.files.imagegame[0].originalname).toLowerCase() === '.webp') {
+          imagegametxt =
+            "app\\images\\game\\" +
+            req.files.imagegame[0].filename;
+        } else {
+          imagegametxt =
+            "app\\images\\game\\resized\\" +
+            req.files.imagegame[0].filename;
+        }
       } catch (err) {
         imagegametxt = null;
       }
@@ -180,24 +192,49 @@ exports.updateGame = async (req, res) => {
   try {
     if (req.body.checkimagegame === "true") {
       try {
-        await sharp(req.files.imagegame[0].path)
-          .jpeg({ quality: 50 })
-          .toFile(
+        // await sharp(req.files.imagegame[0].path)
+        //   .jpeg({ quality: 50 })
+        //   .toFile(
+        //     path.resolve(
+        //       req.files.imagegame[0].destination,
+        //       "resized",
+        //       req.files.imagegame[0].filename
+        //     )
+        //   );
+        // fs.unlinkSync(req.files.imagegame[0].path);
+
+
+        let sharpInstance = sharp(req.files.imagegame[0].path);
+
+        if (path.extname(req.files.imagegame[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 80 });
+          await sharpInstance.toFile(
             path.resolve(
               req.files.imagegame[0].destination,
               "resized",
               req.files.imagegame[0].filename
             )
           );
-        fs.unlinkSync(req.files.imagegame[0].path);
+          fs.unlinkSync(req.files.imagegame[0].path);
+        }
       } catch (err) { }
 
       var imagegametxt = null;
 
       try {
-        imagegametxt =
-          "app\\images\\game\\resized\\" +
-          req.files.imagegame[0].filename;
+        if (path.extname(req.files.imagegame[0].originalname).toLowerCase() === '.webp') {
+          imagegametxt =
+            "app\\images\\game\\" +
+            req.files.imagegame[0].filename;
+        } else {
+          imagegametxt =
+            "app\\images\\game\\resized\\" +
+            req.files.imagegame[0].filename;
+        }
+
       } catch (err) {
         imagegametxt = null;
       }

@@ -27,7 +27,8 @@ const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === "image/png" ||
     file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/webp"
   ) {
     // check file type to be pdf, doc, or docx
     cb(null, true);
@@ -75,26 +76,50 @@ exports.createCamp = async (req, res) => {
       var data_camp = {};
       const countcamp = await camp.count();
       try {
-        await sharp(req.files.imagecamp[0].path)
-          // .resize(400, 400)
-          .webp({ quality: 100 })
-          .toFile(
+        // await sharp(req.files.imagecamp[0].path)
+        //   // .resize(400, 400)
+        //   .webp({ quality: 100 })
+        //   .toFile(
+        //     path.resolve(
+        //       req.files.imagecamp[0].destination,
+        //       "resized",
+        //       req.files.imagecamp[0].filename
+        //     )
+        //   );
+        // fs.unlinkSync(req.files.imagecamp[0].path);
+
+        let sharpInstance = sharp(req.files.imagecamp[0].path);
+
+        if (path.extname(req.files.imagecamp[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 80 });
+          await sharpInstance.toFile(
             path.resolve(
               req.files.imagecamp[0].destination,
               "resized",
               req.files.imagecamp[0].filename
             )
           );
-        fs.unlinkSync(req.files.imagecamp[0].path);
+          fs.unlinkSync(req.files.imagecamp[0].path);
+        }
       } catch (err) { }
       //************************************************************ */
 
       var imagecamptxt = null;
 
       try {
-        imagecamptxt =
-          "app\\images\\camp\\resized\\" +
-          req.files.imagecamp[0].filename;
+        if (path.extname(req.files.imagecamp[0].originalname).toLowerCase() === '.webp') {
+          imagecamptxt =
+            "app\\images\\camp\\" +
+            req.files.imagecamp[0].filename;
+        } else {
+          imagecamptxt =
+            "app\\images\\camp\\resized\\" +
+            req.files.imagecamp[0].filename;
+        }
+
       } catch (err) {
         imagecamptxt = null;
       }
@@ -211,30 +236,29 @@ exports.deleteImgCamp = async (req, res) => {
       });
       return;
     }
-    if(req.body.id!==null){
+    if (req.body.id !== null) {
       await camp
-      .update(
-        { imagecamp: null },
-        {
-          where: { id: req.body.id },
-        }
-      )
-      .then((num) => {
-        return res.send({
-          message: "ImgCamp was updated successfully.",
+        .update(
+          { imagecamp: null },
+          {
+            where: { id: req.body.id },
+          }
+        )
+        .then((num) => {
+          return res.send({
+            message: "ImgCamp was updated successfully.",
+          });
+        })
+        .catch((err) => {
+          return res.status(500).send({
+            message: "Error updating ImgCamp ",
+          });
         });
-      })
-      .catch((err) => {
-        return res.status(500).send({
-          message: "Error updating ImgCamp ",
-        });
-      });
-    }
-    return res.send({
-      message: "ImgCamp was updated successfully.",
-    });
-  });
+    }else {
+      res.status(200).send({ status: true });
+  }
 
+  });
   return;
 };
 exports.updateCamp = async (req, res) => {
@@ -242,24 +266,37 @@ exports.updateCamp = async (req, res) => {
   try {
     if (req.body.checkimagecamp === "true") {
       try {
-        await sharp(req.files.imagecamp[0].path)
-          .jpeg({ quality: 50 })
-          .toFile(
+        let sharpInstance = sharp(req.files.imagecamp[0].path);
+
+        if (path.extname(req.files.imagecamp[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 80 });
+          await sharpInstance.toFile(
             path.resolve(
               req.files.imagecamp[0].destination,
               "resized",
               req.files.imagecamp[0].filename
             )
           );
-        fs.unlinkSync(req.files.imagecamp[0].path);
+          fs.unlinkSync(req.files.imagecamp[0].path);
+        }
       } catch (err) { }
 
       var imagecamptxt = null;
 
       try {
-        imagecamptxt =
-          "app\\images\\camp\\resized\\" +
-          req.files.imagecamp[0].filename;
+        if (path.extname(req.files.imagecamp[0].originalname).toLowerCase() === '.webp') {
+          imagecamptxt =
+            "app\\images\\camp\\" +
+            req.files.imagecamp[0].filename;
+        } else {
+          imagecamptxt =
+            "app\\images\\camp\\resized\\" +
+            req.files.imagecamp[0].filename;
+        }
+
       } catch (err) {
         imagecamptxt = null;
       }

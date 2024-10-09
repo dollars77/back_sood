@@ -165,7 +165,7 @@ exports.createPeople = async (req, res) => {
   }
 
   people
-    .findOne({ where: { phone: req.body.phone } })
+    .findOne({ where: { [Op.or]: [{ phone: req.body.phone }, { username: req.body.username }]} })
     .then(async (user) => {
       if (user) {
         res.status(400).send({
