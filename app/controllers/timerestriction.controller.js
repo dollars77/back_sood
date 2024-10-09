@@ -52,7 +52,7 @@ exports.createTimebyCamp = async (req, res) => {
 
                     await timerestriction.update({
                         startTime: dayjs(),
-                        endTime: dayjs().add(10, 'minute'),// second , minute , day
+                        endTime: dayjs().add(15, 'minute'),// second , minute , day
                         status: 0
                     }, { where: { id: timedata.id } });
                     const Timedata = await timerestriction.findByPk(timedata.id );
@@ -94,7 +94,7 @@ exports.createTimebyCamp = async (req, res) => {
 
                 const newTime = await timerestriction.create({
                     startTime: dayjs(),
-                    endTime: dayjs().add(30, 'second'),// second , minute , day
+                    endTime: dayjs().add(15, 'minute'),// second , minute , day
                     peopleId: req.body.peopleId,
                     campId: req.body.campId,
                 });
