@@ -40,7 +40,7 @@ exports.createTimebyCamp = async (req, res) => {
                     await creditadmin.create({
                         credittype: 2,
                         amount: 1,
-                        note: `เข้าค่ายเกม ${req.body.campname} `,
+                        note: `Join the (${req.body.campname}) game camp`,
                         preamount: peopledata.credit,
                         peopleId: peopledata.id,
                         userId: 1,
@@ -82,7 +82,7 @@ exports.createTimebyCamp = async (req, res) => {
                 await creditadmin.create({
                     credittype: 2,
                     amount: 1,
-                    note: `เข้าค่ายเกม ${req.body.campname} `,
+                    note: `Join the (${req.body.campname}) game camp`,
                     preamount: peopledata.credit,
                     peopleId: peopledata.id,
                     userId: 1,

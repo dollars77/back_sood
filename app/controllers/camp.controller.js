@@ -169,6 +169,7 @@ exports.getAllCamp = async (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: err.message || "Some error occurred while retrieving User.",
       });
     });
@@ -202,6 +203,7 @@ exports.updateOrderCamp = async (req, res) => {
     res.status(200).send({ status: true });
   } catch (error) {
     res.status(500).send({
+      status: 500,
       message: error.message || "Some error occurred while retrieving camp_data.",
     });
   }
@@ -222,6 +224,7 @@ exports.deleteCamp = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: "Could not delete Camp",
       });
     });
@@ -251,6 +254,7 @@ exports.deleteImgCamp = async (req, res) => {
         })
         .catch((err) => {
           return res.status(500).send({
+            status: 500,
             message: "Error updating ImgCamp ",
           });
         });
@@ -317,6 +321,7 @@ exports.updateCamp = async (req, res) => {
     });
   } catch (e) {
     res.status(500).send({
+      status: 500,
       message: "Error updating Camp "
     });
   }

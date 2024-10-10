@@ -72,6 +72,7 @@ exports.updateAdmin = async (req, res) => {
         })
         .catch(err => {
             res.status(500).send({
+                status: 500,
                 message: "Error updating Admin with id=" + id
             });
         });

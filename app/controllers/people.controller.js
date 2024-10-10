@@ -350,6 +350,7 @@ exports.getCountUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).send({
+      status: 500,
       message: error,
     });
   }
@@ -364,6 +365,7 @@ exports.getAllUsernew = async (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: err.message || "Some error occurred while retrieving User.",
       });
     });
@@ -396,6 +398,7 @@ exports.getOneUser = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: err.message || "Some error occurred while retrieving Exams.",
       });
     });
@@ -412,6 +415,7 @@ exports.getOneUserAdmin = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: err.message || "Some error occurred while retrieving Exams.",
       });
     });
@@ -491,6 +495,7 @@ exports.updateUser = async (req, res) => {
         })
         .catch((err) => {
           res.status(500).send({
+            status: 500,
             message: "Error updating User with id=" + id,
           });
         });

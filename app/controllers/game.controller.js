@@ -151,6 +151,7 @@ exports.getAllGame = async (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: err.message || "Some error occurred while retrieving User.",
       });
     });
@@ -164,6 +165,7 @@ exports.getAllGameUser = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send({
+      status: 500,
       message: err.message || "Some error occurred while retrieving User.",
     });
   }
@@ -182,6 +184,7 @@ exports.getAllGameUser = async (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: err.message || "Some error occurred while retrieving User.",
       });
     });
@@ -257,6 +260,7 @@ exports.updateGame = async (req, res) => {
     });
   } catch (e) {
     res.status(500).send({
+      status: 500,
       message: "Error updating Game "
     });
   }
@@ -287,6 +291,7 @@ exports.deleteImgGame = async (req, res) => {
         })
         .catch((err) => {
           return res.status(500).send({
+            status: 500,
             message: "Error updating ImgGame ",
           });
         });
@@ -314,6 +319,7 @@ exports.updateOrderGame = async (req, res) => {
     res.status(200).send({ status: true });
   } catch (error) {
     res.status(500).send({
+      status: 500,
       message: error.message || "Some error occurred while retrieving game_data",
     });
   }
@@ -334,6 +340,7 @@ exports.deleteGame = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
+        status: 500,
         message: "Could not delete game",
       });
     });
