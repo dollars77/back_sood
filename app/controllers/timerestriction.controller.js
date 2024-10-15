@@ -55,8 +55,8 @@ exports.createTimebyCamp = async (req, res) => {
                         endTime: dayjs().add(15, 'minute'),// second , minute , day
                         status: 0
                     }, { where: { id: timedata.id } });
-                    const Timedata = await timerestriction.findByPk(timedata.id );
-                    
+                    const Timedata = await timerestriction.findByPk(timedata.id);
+
                     return res.status(200).json({ access: true, endTime: Timedata.endTime, useCredit: true });
                 }
             } else {
@@ -105,6 +105,7 @@ exports.createTimebyCamp = async (req, res) => {
 
     } catch (error) {
         return res.status(500).send({
+            status: 500,
             message: error.message || "Some error occurred while retrieving Exams.",
         });
     }
@@ -113,3 +114,39 @@ exports.createTimebyCamp = async (req, res) => {
 
 
 };
+
+exports.EnterCamp = async (req, res) => {
+    try {
+        let peopledata = await people.findOne({
+            attributes: ["id", "credit"],
+            where: { id: req.body.peopleId },
+        });
+        peopledata = JSON.stringify(peopledata);
+        peopledata = JSON.parse(peopledata);
+        if (peopledata.credit <= 0) {
+            return res.status(401).json({ status: 401, access: false, useCredit: false }); // เครดิตไม่พอ
+        } else {
+            await creditadmin.create({
+                credittype: 2,
+                amount: 1,
+                note: `Join the (${req.body.campname}) game camp`,
+                preamount: peopledata.credit,
+                peopleId: peopledata.id,
+                userId: 1,
+            });
+            await people.increment("credit", {
+                by: -1,
+                where: { id: req.body.peopleId },
+            });
+
+
+            return res.status(200).json({ access: true, useCredit: true });
+        }
+    } catch (error) {
+        return res.status(500).send({
+            status: 500,
+            message: error.message || "Some error occurred while retrieving Exams.",
+        });
+    }
+
+}

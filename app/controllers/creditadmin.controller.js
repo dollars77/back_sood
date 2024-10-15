@@ -34,6 +34,14 @@ exports.createCreditadmin = async (req, res) => {
       });
       peopledata = JSON.stringify(peopledata);
       peopledata = JSON.parse(peopledata);
+      
+      if(Number(peopledata.credit)<=0&&credittype === 2){
+        res.status(401).send({
+          status: 401,
+          message: "The amount is already zero.",
+        });
+        return;
+      }
 
       try {
         await creditadmin.create({
@@ -47,13 +55,17 @@ exports.createCreditadmin = async (req, res) => {
         if (credittype === 1) {
           await people.increment("credit", {
             by: req.body.amount,
-            where: { phone: req.body.phone },
+            where: { id: peopledata.id },
           });
         } else {
-          await people.increment("credit", {
-            by: -req.body.amount,
-            where: { phone: req.body.phone },
-          });
+          req.body.amount > peopledata.credit ?
+            await people.increment("credit", {
+              by: -peopledata.credit,
+              where: { id: peopledata.id },
+            }) : await people.increment("credit", {
+              by: -req.body.amount,
+              where: { id: peopledata.id },
+            })
         }
         res.status(200).send({ status: true });
       } catch (error) {
