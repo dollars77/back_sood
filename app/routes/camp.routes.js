@@ -9,6 +9,7 @@ module.exports =(app)=>{
     router.get('/oneCamp/:id',camp.getOneCamp)
     router.delete('/deleteCamp/:id',camp.deleteCamp);
     router.post('/deleteimagecamp',camp.deleteImgCamp)
+    router.post('/deleteiconcamp',camp.deleteIconCamp)
     
     router.put('/updateOrder',camp.updateOrderCamp)
 

@@ -14,6 +14,8 @@ const fileStorage = multer.diskStorage({
     // if uploading resume
     if (file.fieldname === "imagecamp") {
       cb(null, "./app/images/camp");
+    }else if(file.fieldname === "iconcamp"){
+      cb(null, "./app/images/camp_icon");
     }
   },
   filename: (req, file, cb) => {
@@ -49,6 +51,10 @@ var upload_test = multer({
     name: "imagecamp",
     maxCount: 1,
   },
+  {
+    name: "iconcamp",
+    maxCount: 1,
+  },
 
 ]);
 exports.uploadimage = upload_test;
@@ -76,17 +82,7 @@ exports.createCamp = async (req, res) => {
       var data_camp = {};
       const countcamp = await camp.count();
       try {
-        // await sharp(req.files.imagecamp[0].path)
-        //   // .resize(400, 400)
-        //   .webp({ quality: 100 })
-        //   .toFile(
-        //     path.resolve(
-        //       req.files.imagecamp[0].destination,
-        //       "resized",
-        //       req.files.imagecamp[0].filename
-        //     )
-        //   );
-        // fs.unlinkSync(req.files.imagecamp[0].path);
+
 
         let sharpInstance = sharp(req.files.imagecamp[0].path);
 
@@ -123,10 +119,54 @@ exports.createCamp = async (req, res) => {
       } catch (err) {
         imagecamptxt = null;
       }
+       //************************************************************ */
+      try {
+
+
+        let sharpInstance = sharp(req.files.iconcamp[0].path).resize(500, 500, {
+          fit: 'fill',     // This will maintain aspect ratio and crop if necessary
+          position: 'center'
+        });
+
+        if (path.extname(req.files.iconcamp[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 50 });
+          await sharpInstance.toFile(
+            path.resolve(
+              req.files.iconcamp[0].destination,
+              "resized",
+              req.files.iconcamp[0].filename
+            )
+          );
+          fs.unlinkSync(req.files.iconcamp[0].path);
+        }
+      } catch (err) { }
+      //************************************************************ */
+
+      var iconcamptxt = null;
+
+      try {
+        if (path.extname(req.files.iconcamp[0].originalname).toLowerCase() === '.webp') {
+          iconcamptxt =
+            "app\\images\\camp_icon\\" +
+            req.files.iconcamp[0].filename;
+        } else {
+          iconcamptxt =
+            "app\\images\\camp_icon\\resized\\" +
+            req.files.iconcamp[0].filename;
+        }
+
+      } catch (err) {
+        iconcamptxt = null;
+      }
+       //************************************************************ */
 
       try {
         data_camp = {
           imagecamp: imagecamptxt,
+          iconcamp:iconcamptxt,
           campname: req.body.campname,
           status: req.body.status,
           order: countcamp + 1,
@@ -265,6 +305,42 @@ exports.deleteImgCamp = async (req, res) => {
   });
   return;
 };
+exports.deleteIconCamp = async (req, res) => {
+  const filePath = req.body.iconcampBackup;
+
+  fs.unlink(filePath, async (err) => {
+    if (err) {
+      res.status(400).send({
+        message: "Content can not be empty!",
+      });
+      return;
+    }
+    if (req.body.id !== null) {
+      await camp
+        .update(
+          { iconcamp: null },
+          {
+            where: { id: req.body.id },
+          }
+        )
+        .then((num) => {
+          return res.send({
+            message: "ImgCamp was updated successfully.",
+          });
+        })
+        .catch((err) => {
+          return res.status(500).send({
+            status: 500,
+            message: "Error updating ImgCamp ",
+          });
+        });
+    }else {
+      res.status(200).send({ status: true });
+  }
+
+  });
+  return;
+};
 exports.updateCamp = async (req, res) => {
 
   try {
@@ -305,9 +381,51 @@ exports.updateCamp = async (req, res) => {
         imagecamptxt = null;
       }
       await camp.update({ imagecamp: imagecamptxt }, { where: { id: req.body.id } });
-      //************************************************************ */
     }
+     //************************************************************ */
+    if (req.body.checkiconcamp === "true") {
+      try {
+        let sharpInstance = sharp(req.files.iconcamp[0].path).resize(500, 500, {
+          fit: 'fill',     // This will maintain aspect ratio and crop if necessary
+          position: 'center'
+        });
 
+        if (path.extname(req.files.iconcamp[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 50 });
+          await sharpInstance.toFile(
+            path.resolve(
+              req.files.iconcamp[0].destination,
+              "resized",
+              req.files.iconcamp[0].filename
+            )
+          );
+          fs.unlinkSync(req.files.iconcamp[0].path);
+        }
+      } catch (err) { }
+
+      var iconcamptxt = null;
+
+      try {
+        if (path.extname(req.files.iconcamp[0].originalname).toLowerCase() === '.webp') {
+          iconcamptxt =
+            "app\\images\\camp_icon\\" +
+            req.files.iconcamp[0].filename;
+        } else {
+          iconcamptxt =
+            "app\\images\\camp_icon\\resized\\" +
+            req.files.iconcamp[0].filename;
+        }
+
+      } catch (err) {
+        iconcamptxt = null;
+      }
+      await camp.update({ iconcamp: iconcamptxt }, { where: { id: req.body.id } });
+     
+    }
+ //************************************************************ */
     const data_camp = {
       campname: req.body.campname,
       status: req.body.status,

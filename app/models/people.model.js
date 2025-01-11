@@ -50,6 +50,14 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       defaultValue: "",
     },
+    currentToken: {
+      type: Sequelize.STRING,
+      defaultValue: null,
+    },
+    deviceInfo: {
+      type: Sequelize.STRING,
+      defaultValue: null,
+    },
   });
   return People;
 };

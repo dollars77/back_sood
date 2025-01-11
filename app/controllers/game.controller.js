@@ -14,6 +14,8 @@ const fileStorage = multer.diskStorage({
     // if uploading resume
     if (file.fieldname === "imagegame") {
       cb(null, "./app/images/game");
+    } else if (file.fieldname === "icongame") {
+      cb(null, "./app/images/game_icon");
     }
   },
   filename: (req, file, cb) => {
@@ -27,7 +29,7 @@ const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === "image/png" ||
     file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"||
+    file.mimetype === "image/jpeg" ||
     file.mimetype === "image/webp"
   ) {
     // check file type to be pdf, doc, or docx
@@ -47,6 +49,10 @@ var upload_test = multer({
 
   {
     name: "imagegame",
+    maxCount: 1,
+  },
+  {
+    name: "icongame",
     maxCount: 1,
   },
 
@@ -109,10 +115,50 @@ exports.createGame = async (req, res) => {
       } catch (err) {
         imagegametxt = null;
       }
+      //************************************************************ */
+      try {
+        let sharpInstance = sharp(req.files.icongame[0].path).resize(500, 500, {
+          fit: 'fill',     // This will maintain aspect ratio and crop if necessary
+          position: 'center'
+        });
 
+        if (path.extname(req.files.icongame[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 50 });
+          await sharpInstance.toFile(
+            path.resolve(
+              req.files.icongame[0].destination,
+              "resized",
+              req.files.icongame[0].filename
+            )
+          );
+          fs.unlinkSync(req.files.icongame[0].path);
+        }
+      } catch (err) { }
+      //************************************************************ */
+
+      var icongametxt = null;
+
+      try {
+        if (path.extname(req.files.icongame[0].originalname).toLowerCase() === '.webp') {
+          icongametxt =
+            "app\\images\\game_icon\\" +
+            req.files.icongame[0].filename;
+        } else {
+          icongametxt =
+            "app\\images\\game_icon\\resized\\" +
+            req.files.icongame[0].filename;
+        }
+      } catch (err) {
+        icongametxt = null;
+      }
+      //************************************************************ */
       try {
         data_camp = {
           imagegame: imagegametxt,
+          icongame: icongametxt,
           gamename: req.body.gamename,
           status: req.body.status,
           cover: req.body.cover,
@@ -195,18 +241,6 @@ exports.updateGame = async (req, res) => {
   try {
     if (req.body.checkimagegame === "true") {
       try {
-        // await sharp(req.files.imagegame[0].path)
-        //   .jpeg({ quality: 50 })
-        //   .toFile(
-        //     path.resolve(
-        //       req.files.imagegame[0].destination,
-        //       "resized",
-        //       req.files.imagegame[0].filename
-        //     )
-        //   );
-        // fs.unlinkSync(req.files.imagegame[0].path);
-
-
         let sharpInstance = sharp(req.files.imagegame[0].path);
 
         if (path.extname(req.files.imagegame[0].originalname).toLowerCase() === '.webp') {
@@ -242,9 +276,52 @@ exports.updateGame = async (req, res) => {
         imagegametxt = null;
       }
       await game.update({ imagegame: imagegametxt }, { where: { id: req.body.id } });
-      //************************************************************ */
+      
     }
+//************************************************************ */
+    if (req.body.checkicongame === "true") {
+      try {
+        let sharpInstance = sharp(req.files.icongame[0].path).resize(500, 500, {
+          fit: 'fill',     // This will maintain aspect ratio and crop if necessary
+          position: 'center'
+        });
 
+        if (path.extname(req.files.icongame[0].originalname).toLowerCase() === '.webp') {
+          sharpInstance = sharpInstance.webp();
+
+        } else {
+          sharpInstance = sharpInstance.png({ quality: 50 });
+          await sharpInstance.toFile(
+            path.resolve(
+              req.files.icongame[0].destination,
+              "resized",
+              req.files.icongame[0].filename
+            )
+          );
+          fs.unlinkSync(req.files.icongame[0].path);
+        }
+      } catch (err) { }
+
+      var icongametxt = null;
+
+      try {
+        if (path.extname(req.files.icongame[0].originalname).toLowerCase() === '.webp') {
+          icongametxt =
+            "app\\images\\game_icon\\" +
+            req.files.icongame[0].filename;
+        } else {
+          icongametxt =
+            "app\\images\\game_icon\\resized\\" +
+            req.files.icongame[0].filename;
+        }
+
+      } catch (err) {
+        icongametxt = null;
+      }
+      await game.update({ icongame: icongametxt }, { where: { id: req.body.id } });
+      
+    }
+//************************************************************ */
     const data_game = {
       gamename: req.body.gamename,
       status: req.body.status,
@@ -280,6 +357,43 @@ exports.deleteImgGame = async (req, res) => {
       await game
         .update(
           { imagegame: null },
+          {
+            where: { id: req.body.id },
+          }
+        )
+        .then((num) => {
+          return res.send({
+            message: "ImgGame was updated successfully.",
+          });
+        })
+        .catch((err) => {
+          return res.status(500).send({
+            status: 500,
+            message: "Error updating ImgGame ",
+          });
+        });
+    } else {
+      res.status(200).send({ status: true });
+    }
+
+  });
+
+  return;
+};
+exports.deleteIconGame = async (req, res) => {
+  const filePath = req.body.icongameBackup;
+
+  fs.unlink(filePath, async (err) => {
+    if (err) {
+      res.status(400).send({
+        message: "Content can not be empty!",
+      });
+      return;
+    }
+    if (req.body.id !== null) {
+      await game
+        .update(
+          { icongame: null },
           {
             where: { id: req.body.id },
           }

@@ -165,7 +165,7 @@ exports.createPeople = async (req, res) => {
   }
 
   people
-    .findOne({ where: { [Op.or]: [{ phone: req.body.phone }, { username: req.body.username }]} })
+    .findOne({ where: { [Op.or]: [{ phone: req.body.phone }, { username: req.body.username }] } })
     .then(async (user) => {
       if (user) {
         res.status(400).send({
@@ -210,7 +210,7 @@ exports.createPeople = async (req, res) => {
           credit: req.body.credit,
           phone: req.body.phone,
           email: req.body.email,
-          username:req.body.username,
+          username: req.body.username,
 
           refcode: makecode(8),
         };
@@ -250,7 +250,7 @@ exports.getAllUser = async (req, res) => {
 exports.getlast10user = async (req, res) => {
   people
     .findAll({
-      attributes: ['id', 'username', 'phone', 'credit',"createdAt"], order: [
+      attributes: ['id', 'username', 'phone', 'credit', "createdAt"], order: [
         ["createdAt", "DESC"],
       ],
     })
@@ -375,33 +375,112 @@ exports.getAllUsernew = async (req, res) => {
 
 
 
-exports.getOneUser = (req, res) => {
+// exports.getOneUser = (req, res) => {
 
-  people
-    .findOne({
-      // attributes: ['id', 'firstname', 'lastname', 'uid', 'phone', 'email', 'password', 'idbank'],
-      attributes: ['id', 'firstname', 'lastname', 'username', 'phone', 'email', 'password'],
-      where: { [Op.or]: [{ phone: req.body.phone }, { username: req.body.phone }] },
-    })
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: "User Not found." });
-      }
-      if (req.body.password != user.password) {
-        return res.status(401).send({
-          accessToken: null,
-          message: "Invalid Password!",
-        });
-      }
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '24h' });
-      res.status(200).send({ user,token: token   });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        status: 500,
-        message: err.message || "Some error occurred while retrieving Exams.",
-      });
+//   people
+//     .findOne({
+//       attributes: ['id', 'firstname', 'lastname', 'username', 'phone', 'email', 'password'],
+//       where: { [Op.or]: [{ phone: req.body.phone }, { username: req.body.phone }] },
+//     })
+//     .then((user) => {
+//       if (!user) {
+//         return res.status(404).send({ message: "User Not found." });
+//       }
+//       if (req.body.password != user.password) {
+//         return res.status(401).send({
+//           accessToken: null,
+//           message: "Invalid Password!",
+//         });
+//       }
+//       const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '24h' });
+//       res.status(200).send({ user,token: token   });
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         status: 500,
+//         message: err.message || "Some error occurred while retrieving Exams.",
+//       });
+//     });
+// };
+
+exports.getOneUser = async (req, res) => {
+  try {
+    const user = await people.findOne({
+      attributes: ['id', 'firstname', 'lastname', 'username', 'phone', 'email', 'password', 'currentToken'],
+      where: {
+        [Op.or]: [
+          { phone: req.body.phone },
+          { username: req.body.phone }
+        ]
+      },
     });
+
+    if (!user) {
+      return res.status(404).send({ message: "User Not found." });
+    }
+
+    if (req.body.password != user.password) {
+      return res.status(401).send({
+        accessToken: null,
+        message: "Invalid Password!",
+      });
+    }
+
+    // สร้าง token ใหม่
+    const token = jwt.sign(
+      { id: user.id },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // อัพเดท token และข้อมูลอุปกรณ์
+    await user.update({
+      currentToken: token,
+      deviceInfo: req.headers['user-agent']
+    });
+
+    // ลบ currentToken จาก response
+    const userResponse = user.toJSON();
+    delete userResponse.currentToken;
+
+    res.status(200).send({
+      user: userResponse,
+      token: token
+    });
+
+  } catch (err) {
+    res.status(500).send({
+      status: 500,
+      message: err.message || "Some error occurred while retrieving user.",
+    });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    // ถอดรหัส token เพื่อเอา userId
+    const decoded = jwt.verify(req.body.xaccesstoken, JWT_SECRET);
+
+    const user = await people.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(404).send({ message: "User Not found." });
+    }
+
+    // ลบ token และข้อมูลอุปกรณ์
+    await user.update({
+      currentToken: null,
+      deviceInfo: null
+    });
+
+    res.status(200).send({
+      message: "Logged out successfully"
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while logging out."
+    });
+  }
 };
 
 exports.getOneUserAdmin = (req, res) => {
@@ -601,25 +680,54 @@ exports.deleteUser = (req, res) => {
 };
 
 // **************** ของผู้ใช้ ******************************
-exports.verifyToken = (req, res, next) => {
+// exports.verifyToken = (req, res, next) => {
+//   const token = req.body.xaccesstoken;
+
+//   if (!token) {
+//     return res.status(403).json({ message: 'No token provided' });
+//   }
+
+//   jwt.verify(token, JWT_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).json({ message: 'Unauthorized' });
+//     }
+//     req.userId = decoded.id;
+//     res.status(200).send({
+//       message: "Login Finish."
+//     });
+//     // next();
+//   });
+
+// };
+exports.verifyToken = async (req, res, next) => {
   const token = req.body.xaccesstoken;
 
   if (!token) {
     return res.status(403).json({ message: 'No token provided' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // เช็คว่า token ตรงกับที่เก็บในฐานข้อมูลหรือไม่
+    const user = await people.findByPk(decoded.id);
+
+    if (!user || user.currentToken !== token) {
+      return res.status(401).json({
+        message: "Your session has expired because you logged in from another device"
+      });
     }
+
     req.userId = decoded.id;
     res.status(200).send({
       message: "Login Finish."
     });
-    // next();
-  });
-
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 };
+
 exports.getOneUserAfter = (req, res) => {
   const id = req.params.id;
   people

@@ -8,6 +8,10 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING,
         defaultValue: null,
       },
+      iconcamp: {
+        type: Sequelize.STRING,
+        defaultValue: null,
+      },
       order: {
         type: Sequelize.INTEGER,
         defaultValue: 0,

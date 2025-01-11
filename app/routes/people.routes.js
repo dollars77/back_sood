@@ -30,6 +30,7 @@ module.exports =(app)=>{
     router.post('/onePeople',people.getOneUser)
     router.get('/oneUserdata/:id',people.getOneUserAfter)
     router.post('/checktoken',people.verifyToken)
+    router.post('/logout',people.logout)
 
 
     router.post('/userupdateinfo/:id',people.UserUpdateInfo)

@@ -8,6 +8,7 @@ module.exports =(app)=>{
     router.get('/allGame/:id',game.getAllGame)
     router.delete('/deleteGame/:id',game.deleteGame);
     router.post('/deleteimageGame',game.deleteImgGame);
+    router.post('/deleteiconGame',game.deleteIconGame);
 
     /*ของ user*/
     router.get('/allGameUser/:id',game.getAllGameUser)

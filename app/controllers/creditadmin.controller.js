@@ -114,7 +114,7 @@ exports.getAllCreditAdminToday = async (req, res) => {
 
 exports.getAllCreditAdmin = async (req, res) => {
 
-  creditadmin
+ await creditadmin
     .findAll({
       include: [
         {
@@ -142,7 +142,7 @@ exports.getAllCreditAdmin = async (req, res) => {
 };
 exports.getAllCreditAdminByUser = async (req, res) => {
 
-  creditadmin
+ await creditadmin
     .findAll({
       where: { peopleId: req.params.id },
       include: [

@@ -35,7 +35,9 @@ db.game = require("../models/game.model.js")(sequelize, Sequelize);
 
 db.weburl = require("../models/weburl.model.js")(sequelize, Sequelize);
 db.banner = require("../models/banner.model.js")(sequelize, Sequelize);
-
+db.history = require("../models/history.model.js")(sequelize, Sequelize);
+db.preset = require("../models/preset.model.js")(sequelize, Sequelize);
+db.preset_game = require("../models/preset_game.model.js")(sequelize, Sequelize);
 
 
 db.people.hasMany(db.creditadmin,{foreignKey:{name:'peopleId',allowNull:false},onDelete:'CASCADE'});
@@ -52,6 +54,15 @@ db.timerestriction.belongsTo(db.camp,{foreignKey:{name:'campId',allowNull:false}
 
 db.people.hasMany(db.timerestriction,{foreignKey:{name:'peopleId',allowNull:false},onDelete:'CASCADE'});
 db.timerestriction.belongsTo(db.people,{foreignKey:{name:'peopleId',allowNull:false},onDelete:'CASCADE'});
+
+db.people.hasMany(db.history,{foreignKey:{name:'peopleId',allowNull:false},onDelete:'CASCADE'});
+db.history.belongsTo(db.people,{foreignKey:{name:'peopleId',allowNull:false},onDelete:'CASCADE'});
+
+db.game.hasMany(db.preset_game,{foreignKey:{name:'gameId',allowNull:false},onDelete:'CASCADE'});
+db.preset_game.belongsTo(db.game,{foreignKey:{name:'gameId',allowNull:false},onDelete:'CASCADE'});
+
+db.preset.hasMany(db.preset_game,{foreignKey:{name:'presetId',allowNull:false},onDelete:'CASCADE'});
+db.preset_game.belongsTo(db.preset,{foreignKey:{name:'presetId',allowNull:false},onDelete:'CASCADE'});
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -79,6 +90,23 @@ db.user.belongsToMany(db.people,{
   unique: false,
   // onDelete:'restrict'
   },foreignKey:"userId",
+})
+
+db.game.belongsToMany(db.preset,{
+  through:{
+  model:db.preset_game,
+  as: "preset",
+  unique: false,
+  // onDelete:'restrict'
+  },foreignKey:"gameId",
+})
+db.preset.belongsToMany(db.game,{
+  through:{
+  model:db.preset_game,
+  as: "game",
+  unique: false,
+  // onDelete:'restrict'
+  },foreignKey:"presetId",
 })
 
 
