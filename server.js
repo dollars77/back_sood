@@ -113,6 +113,8 @@ require('./app/routes/game.routes')(app);
 require('./app/routes/camp.routes')(app);
 require('./app/routes/banner.routes')(app);
 require('./app/routes/timerestriction.routes')(app);
+require('./app/routes/history.routes')(app);
+require('./app/routes/preset.routes')(app);
 
 
 
