@@ -14,7 +14,7 @@ exports.getAllGame = async (req, res) => {
 
     game
         .findAll({
-            attributes: ["id", "campId", "gamename", "imagegame",
+            attributes: ["id", "campId", "gamename", "imagegame","icongame",
                 "order", "status"],
             where: { status: 1 }, include: [
                 {
