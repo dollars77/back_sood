@@ -10,5 +10,7 @@ module.exports = (app) => {
 
     router.post('/generate-hmac', admin.genHMAC)
 
+    router.post('/webhook', admin.truewalletgetlist)
+
     app.use("/api/admin", router);
 }
