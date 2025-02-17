@@ -45,41 +45,41 @@ exports.updateAdmin = async (req, res) => {
 
 
     user.findAll({ where: { username: req.body.username } })
-    .then(async (checkuser) => {
-      
-      if (checkuser.length > 1) {
-        res.status(400).send({
-          status: 400,
-          message: "Failed! Username is already in use!"
-        });
-        return;
-      }
-  
-      const id = req.params.id;
-    user.update(req.body, {
-        where: { id: id }
-    })
-        .then(num => {
-            if (num == 1) {
-                res.send({
-                    message: "Admin was updated successfully."
-                });
-            } else {
-                res.send({
-                    message: `Cannot update Admin with id=${id}. Maybe Question was not found or req.body is empty!`
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({
-                status: 500,
-                message: "Error updating Admin with id=" + id
-            });
-        });
-      
-    });
+        .then(async (checkuser) => {
 
-    
+            if (checkuser.length > 1) {
+                res.status(400).send({
+                    status: 400,
+                    message: "Failed! Username is already in use!"
+                });
+                return;
+            }
+
+            const id = req.params.id;
+            user.update(req.body, {
+                where: { id: id }
+            })
+                .then(num => {
+                    if (num == 1) {
+                        res.send({
+                            message: "Admin was updated successfully."
+                        });
+                    } else {
+                        res.send({
+                            message: `Cannot update Admin with id=${id}. Maybe Question was not found or req.body is empty!`
+                        });
+                    }
+                })
+                .catch(err => {
+                    res.status(500).send({
+                        status: 500,
+                        message: "Error updating Admin with id=" + id
+                    });
+                });
+
+        });
+
+
 }
 
 exports.deleteAdmin = (req, res) => {
@@ -96,38 +96,51 @@ exports.deleteAdmin = (req, res) => {
     //                 message: "Could not delete SuperAdmin with id=" + id
     //               });
     //         }
-          
+
     //       });
     //   });
     user.destroy({
-      where: { id: id }
+        where: { id: id }
     })
-      .then(() => {
-        res.status(200).send({
-          message: "Admin was deleted successfully!"
+        .then(() => {
+            res.status(200).send({
+                message: "Admin was deleted successfully!"
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: "Could not delete Admin with id=" + id
+            });
         });
-      })
-      .catch(err => {
-        res.status(500).send({
-          message: "Could not delete Admin with id=" + id
-        });
-      });
-  };
+};
 
-  exports.genHMAC=async(req,res)=>{
+exports.genHMAC = async (req, res) => {
     try {
         const key = 'DbcfwDEUP3oKj52a4TW9ZUcC';
         const message = req.body.message;
-      
+
         if (!message) {
-          return res.status(400).json({ error: "Message is required" });
+            return res.status(400).json({ error: "Message is required" });
         }
-      
+
         const hash = crypto.createHmac('sha256', key).update(message).digest('hex');
         res.json({ hash });
     } catch (error) {
         console.log(error.message);
-        
+
+    }
+
+}
+exports.truewalletgetlist = async (req, res) => {
+    try {
+
+        res.status(200).send({
+            message: "call API"
+        });
+
+    } catch (error) {
+        return res.status(400).json({ error: error });
+
     }
 
 }
